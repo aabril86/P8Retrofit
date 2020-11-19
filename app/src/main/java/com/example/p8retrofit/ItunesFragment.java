@@ -22,15 +22,14 @@ import com.example.p8retrofit.databinding.ViewholderContenidoBinding;
 
 import java.util.List;
 
-public class ItunesFragment extends Fragment {
 
+public class ItunesFragment extends Fragment {
     private FragmentItunesBinding binding;
 
-    @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
         return (binding = FragmentItunesBinding.inflate(inflater, container, false)).getRoot();
-
     }
 
     @Override
@@ -38,6 +37,9 @@ public class ItunesFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         ItunesViewModel itunesViewModel = new ViewModelProvider(this).get(ItunesViewModel.class);
+
+        ContenidosAdapter contenidosAdapter = new ContenidosAdapter();
+        binding.recyclerviewContenidos.setAdapter(contenidosAdapter);
 
         binding.texto.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
@@ -50,39 +52,13 @@ public class ItunesFragment extends Fragment {
             }
         });
 
-//        itunesViewModel.respuestaMutableLiveData.observe(getViewLifecycleOwner(), new Observer<Itunes.Respuesta>() {
-//            @RequiresApi(api = Build.VERSION_CODES.N)
-//            @Override
-//            public void onChanged(Itunes.Respuesta respuesta) {
-//                respuesta.results.forEach(contenido -> Log.e("ABCD", contenido.artistName + ", " + contenido.trackName + ", " + contenido.artworkUrl100));
-//            }
-//        });
-
-        ContenidosAdapter contenidosAdapter = new ContenidosAdapter();
-        binding.recyclerviewContenidos.setAdapter(contenidosAdapter);
-
         itunesViewModel.respuestaMutableLiveData.observe(getViewLifecycleOwner(), new Observer<Itunes.Respuesta>() {
             @Override
             public void onChanged(Itunes.Respuesta respuesta) {
-                for(Itunes.Contenido contenido: respuesta.results){
-                    Log.e("ABCD", contenido.artistName + ", " + contenido.trackName + ", " + contenido.artworkUrl100);
-                }
-
-                contenidosAdapter.establecerListaContenido(respuesta.results);
+//                respuesta.results.forEach(contenido -> Log.e("ABCD", contenido.artistName + ", " + contenido.trackName + ", " + contenido.artworkUrl100));
+                contenidosAdapter.establecerListaContenido(respuesta.results); // if != null
             }
         });
-    }
-
-    static class ContenidoViewHolder extends RecyclerView.ViewHolder {
-
-        ViewholderContenidoBinding binding;
-
-        public ContenidoViewHolder(@NonNull ViewholderContenidoBinding binding) {
-            super(binding.getRoot());
-
-            this.binding = binding;
-        }
-
     }
 
     class ContenidosAdapter extends RecyclerView.Adapter<ContenidoViewHolder>{
@@ -92,21 +68,16 @@ public class ItunesFragment extends Fragment {
         @NonNull
         @Override
         public ContenidoViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            Log.e("ABCD", "fsd");
             return new ContenidoViewHolder(ViewholderContenidoBinding.inflate(getLayoutInflater(), parent, false));
         }
 
         @Override
         public void onBindViewHolder(@NonNull ContenidoViewHolder holder, int position) {
-
             Itunes.Contenido contenido = contenidoList.get(position);
-
-            Log.e("ABCD", "dsfsd" + contenido.trackName);
 
             holder.binding.title.setText(contenido.trackName);
             holder.binding.artist.setText(contenido.artistName);
             Glide.with(requireActivity()).load(contenido.artworkUrl100).into(holder.binding.artwork);
-
         }
 
         @Override
@@ -117,6 +88,15 @@ public class ItunesFragment extends Fragment {
         void establecerListaContenido(List<Itunes.Contenido> contenidoList){
             this.contenidoList = contenidoList;
             notifyDataSetChanged();
+        }
+    }
+
+    static class ContenidoViewHolder extends RecyclerView.ViewHolder {
+        ViewholderContenidoBinding binding;
+
+        public ContenidoViewHolder(@NonNull ViewholderContenidoBinding binding) {
+            super(binding.getRoot());
+            this.binding = binding;
         }
     }
 }
